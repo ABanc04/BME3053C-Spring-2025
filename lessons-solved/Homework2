@@ -1,0 +1,29 @@
+bp_readings = [120, 137, 151, 123, 162, 173, 127, 154]
+bp_readings_normalized = []
+def Homework2(bp_readings):
+
+  min_val = min(bp_readings)
+  max_val = max(bp_readings)
+
+  for i in range(len(bp_readings)):
+        normalized_value = (bp_readings[i] - min_val) / (max_val - min_val)  
+        bp_readings_normalized.append(normalized_value) 
+
+  print(bp_readings_normalized)
+
+Homework2(bp_readings)
+
+# normalize = (given - min_val)/(max_val - min_val)
+# 1. Create a new script or a notebook on Colab and copy the list above into the first cell.
+
+# 2. Create a function that will receive an array as an input and:
+
+#     A. Use built-in Python functions to find the min and max of the array.
+
+#     B. Use a for loop to iterate through the list and normalize each reading using the formula provided.
+
+#     C. Return a list that contains normalized values.
+
+# 3. Call your function and print the output.
+
+# 4. Upload your script or notebook.
