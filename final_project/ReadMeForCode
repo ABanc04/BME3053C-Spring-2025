@@ -1,1 +1,188 @@
 Code instructions: 
+
+# Final project 
+# How to use the Code
+To run the code for each cell, simply execute the cell in order that they are presented.
+
+# Code Cell 1
+Prepare Your Data:
+
+Make sure the images are inside a folder called TestData, with two subfolders: yes/ and no/, each containing the corresponding images.
+
+Since the data has already been split into brain_tumor_split/, if one was to run this code again it is recommended that a new base directory folder is created in order to attempt training the same model with newly split data. However, if one wanted to run this exact same model again with the data originally used one could simply not run this cell.
+
+Training, Val, and Test Splits:
+
+The fractions next to each variable train_split, val_split, and test_split will designate that percentage of your chosen data to be randomly split into the decided groups.
+
+Next, the classes within your already organized data set can be changed to match file names intead of 'yes' and 'no' which were used for this project
+
+Run the Script:
+
+If one was to run the script once. It will automatically create a new folder called brain_tumor_split that has subfolders for train/, val/, and test/, each containing the yes/ and no/ images.
+
+# Code Cell 2 
+
+Start Training Your CNN:
+
+Once the dataset is split, one may load it into the model using libraries such as Keras's ImageDataGenerator. 
+
+Install tensorflow with the next code cell as well as the Keras's ImageDataGenerator library. 
+
+The next part of this code cell creates generators that, load images from folders, normalize the pixel values to between 0 and 1 (rescale), which ensures the data is ready for feeding into the model. 
+
+Next the generators are informed of where to find the images in the directory and how to process them given the settings seen in the code below. This code effectively resizes all images to 128x128 pixels, sets the color mode to grayscale since those are the images worked with for this data set, sets batches of images in groups of 32, matches the number of classes with a binary system (yes/no), amd keeps the test data in order for best evaluation processes. 
+
+
+train_generator = train_datagen.flow_from_directory(
+    'brain_tumor_split/train',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary'
+)
+
+val_generator = val_datagen.flow_from_directory(
+    'brain_tumor_split/val',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    'brain_tumor_split/test',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary',
+    shuffle=False  # Important: do not shuffle test data
+)
+
+# Code Cell 3
+
+The next code cell uses TensorFlow's Keras API to build the CNN in a simple linear way of stacking convolution and max pooling layers on top of one another. 
+
+A chart of what each indidual layer contirbutes to the model is printed below to provide enhanced understanding and possible alteration if desired for improved data fitting. 
+
+Layer	         Purpose
+Conv2D(32)	     Detects basic features like edges using 32 filters of size 3x3.
+MaxPooling2D(2x2)	Reduces spatial dimensions to make computation efficient.
+Conv2D(64)	       Learns more complex features with 64 filters.
+MaxPooling2D(2x2)	 Further downsampling.
+Conv2D(128)	         Learns even higher-level features.
+MaxPooling2D(2x2)	  Further reduces dimensions.
+
+The flatten command then converts 3D data into 1D vector for the dense layers to make predictions. 
+
+Dense(128)	   Fully connected layer with 128 neurons to learn feature combinations.
+Dropout(0.5)	Randomly disables 50% of neurons to prevent overfitting.
+Dense(1)	  Output layer with sigmoid activation for binary classification.
+
+The model is then subsequently compiled with the adam optimizer and binary cross-entropy loss since binary classification was utilized. 
+
+Once can view the full architecture and the number of parameters with the line.
+model.summary()
+
+# Code Cell 4 
+
+The next code cell trains the model utilzing the .fit() function:
+
+This command starts the training process where the train_generator feeds batches of training images and labels to the model, while the val_generator supplies batches of validation images and labels to evaluate model performance after each epoch. The epoch setting was set to 10 in order to run through the training data set 10 times. 
+
+# Code Cell 5
+The next code cell depicts a graph of model accuracy and model loss changes over each epoch for ten epochs.
+
+# Code Cell 6 
+Next, import the necessary callback function
+
+from tensorflow.keras.callbacks import ModelCheckpoint
+
+# Code Cell 7 
+
+Set up a model checkpoint to save the model with the highest validation accuracy to the file best_model.h5. 
+
+checkpoint = ModelCheckpoint(
+    'best_model.h5',
+    monitor='val_accuracy',
+    save_best_only=True,
+    mode='max',
+    verbose=1
+)
+
+Next the model was trained with with the Checkpoint in order to continue to imporve the model. 
+
+history = model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=10,
+    callbacks=[checkpoint]
+)
+
+# Code Cell 8
+
+The next code cell again visualizaes the training and validation metrics to understand how the model is performing over each epoch. 
+
+# Code Cell 9 
+
+Next loading and evaluating the best model at the moment can be done since multiple trainings had occured. 
+
+from tensorflow.keras.models import load_model
+
+best_model = load_model('best_model.h5')
+
+This code loads the model file best_model.h5 containing the weights that achieved the highest validation accuracy during training.
+The next line tests the best model on the test data. 
+
+best_model.evaluate(test_generator)
+
+# Code Cell 10 & 11 
+To now improve the model, optional data augmentation to prevent overfitting is added in the next two cells if desired. To augment the data and train the model the next two cells can be run. 
+
+If one runs the code cell they will import the data augmentation tool from tensorflow and randomly augment the training set with rescaling only being applied to validation and test sets in ordeer to not test the model on odd data. This effectively helps the model generalize better and reduces overfitting.
+
+New generators are then created with this augmented data so new data augmentation settings are applied for training.
+
+train_generator = train_datagen.flow_from_directory(
+    'brain_tumor_split/train',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary'
+)
+
+val_generator = val_datagen.flow_from_directory(
+    'brain_tumor_split/val',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    'brain_tumor_split/test',
+    target_size=(128, 128),
+    color_mode='grayscale',
+    batch_size=32,
+    class_mode='binary',
+    shuffle=False
+)
+
+# Code Cell 12
+The model is retrained with the augmented data for 30 epochs which could be increased if desired, however 30 is the recommended minimum for augmented data training. The best model is also contineud to be saved by the checkpoint. 
+
+history = model.fit(
+    train_generator,
+    validation_data=val_generator,
+    epochs=30,
+    callbacks=[checkpoint]
+)
+
+# Code Cell 13 
+The next cell contains another graphing model for the newly trained model thta utilzied augmented data to prevent overfitting. 
+
+# Code Cell 14 
+
+The final test can be conducted in the next cell with the accompanying accurcay and test loss printed as well. 
+
+The final code cell pulls example test data points as well as binary values of what the model predicted which are labeled accordingly if one desires more data points. A confusion matrix can also be printed for further analysis. 
