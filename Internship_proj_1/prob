@@ -1,0 +1,29 @@
+import numpy as np
+
+# Example power fit params: P = a * R^b
+coeffs = {
+    'small': (58.35, -0.673),
+    'medium': (60.12, -0.670),   # dummy values, fit yours
+    'large': (62.55, -0.668)
+}
+
+def pressure_model(R, circ_cm):
+    # Determine which two models to blend
+    if circ_cm < 27:
+        a, b = coeffs['small']
+        return a * R**b
+    elif 27 <= circ_cm <= 34:
+        a1, b1 = coeffs['medium']
+        a2, b2 = coeffs['large']
+        # Weight based on distance between 27–34
+        w = (34 - circ_cm) / (34 - 27)
+        p1 = a1 * R**b1
+        p2 = a2 * R**b2
+        return w * p1 + (1 - w) * p2
+    else:
+        a, b = coeffs['large']
+        return a * R**b
+
+# Example: Circumference = 33 cm, Resistance = 0.8 ohm
+pressure = pressure_model(0.8, 33)
+print("Predicted pressure:", pressure)
